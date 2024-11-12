@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Driving Car Simulation</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .road {
+            position: relative;
+            width: 500px;
+            height: 100px;
+            background-color: #333;
+        }
+        .lane {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 4px;
+            background-color: white;
+            transform: translateY(-50%);
+        }
+        .car {
+            position: absolute;
+            width: 50px;
+            height: 30px;
+            background-color: red;
+            border-radius: 5px;
+            top: 35px;
+            left: 0;
+            transition: left 5s linear; /* Smooth movement */
+        }
+        .checkpoint {
+            position: absolute;
+            width: 10px;
+            height: 50px;
+            background-color: yellow;
+            top: 25px;
+            left: 300px; /* Moved closer to the traffic light */
+        }
+        .traffic-light {
+            position: absolute;
+            width: 20px;
+            height: 60px;
+            background-color: black;
+            top: -70px;
+            left: 300px; /* Adjusted based on the new checkpoint position */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .light {
+            width: 20px;
+            height: 20px;
+            background-color: grey;
+            border-radius: 50%;
+        }
+        .green {
+            background-color: green;
+        }
+        .red {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="road">
+    <div class="lane"></div>
+    <div class="car" id="car"></div>
+    <div class="checkpoint"></div>
+    <div class="traffic-light">
+        <div class="light" id="redLight"></div>
+        <div class="light" id="greenLight"></div>
+    </div>
+</div>
+
+<script>
+    // Initialize variables
+    let carAtCheckpoint = false;
+    let trafficLightColor; // Will be set randomly
+    const trafficLightChangeInterval = 3000; // Traffic light changes every 3 seconds
+    const car = document.getElementById('car');
+    const redLight = document.getElementById('redLight');
+    const greenLight = document.getElementById('greenLight');
+
+    // Function to set a random initial color for the traffic light
+    function setRandomTrafficLightColor() {
+        const isGreen = Math.random() > 0.5; // Randomly decide if green or red
+        trafficLightColor = isGreen ? 'green' : 'red';
+
+        if (trafficLightColor === 'green') {
+            redLight.classList.remove('red');
+            greenLight.classList.add('green');
+        } else {
+            greenLight.classList.remove('green');
+            redLight.classList.add('red');
+        }
+
+        console.log(`Initial traffic light is ${trafficLightColor}`);
+    }
+
+    // Function to simulate the traffic light changing color
+    function changeTrafficLight() {
+        if (trafficLightColor === 'red') {
+            trafficLightColor = 'green';
+            redLight.classList.remove('red');
+            greenLight.classList.add('green');
+        } else {
+            trafficLightColor = 'red';
+            greenLight.classList.remove('green');
+            redLight.classList.add('red');
+        }
+        console.log(`Traffic light is now ${trafficLightColor}`);
+    }
+
+    // Function to move the car
+    function moveCar() {
+        car.style.left = '450px'; // Move car to the right end of the road
+        console.log('Car is moving...');
+    }
+
+    // Function to simulate the car's behavior at the checkpoint
+    function carBehaviorAtCheckpoint() {
+        if (carAtCheckpoint && trafficLightColor === 'green') {
+            moveCar();
+        } else if (carAtCheckpoint && trafficLightColor === 'red') {
+            console.log('Car is waiting for the green light.');
+        }
+    }
+
+    // Simulate the car reaching the checkpoint
+    function carReachesCheckpoint() {
+        car.style.left = '250px'; // Car stops at the checkpoint
+        carAtCheckpoint = true;
+        carBehaviorAtCheckpoint();
+    }
+
+    // Set the initial random traffic light color
+    setRandomTrafficLightColor();
+
+    // Start the traffic light cycle
+    setInterval(changeTrafficLight, trafficLightChangeInterval);
+
+    // Simulate the car reaching the checkpoint after 3 seconds (example)
+    setTimeout(carReachesCheckpoint, 3000);
+
+    // Check periodically if the light has changed to green
+    setInterval(carBehaviorAtCheckpoint, 1000);
+
+</script>
+
+</body>
+</html>
