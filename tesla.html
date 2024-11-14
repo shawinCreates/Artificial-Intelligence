@@ -5,67 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tesla</title>
     <style>
-        /* Basic Layout */
-        body, html {
+        body {
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #e0e0e0;
+            background-color: #e0e0e0;
         }
 
-        /* Road */
         .road {
             width: 60%;
             height: 200px;
-            background: #333;
+            background-color: #333;
             position: relative;
-            overflow: hidden;
+            border: 10px solid #555;
+            overflow: hidden; /* Ensures the car stays within the road */
         }
 
-        /* Car */
         .car {
-            width: 80px;
-            height: 40px;
-            background: red;
+            width: 100px;
+            height: 50px;
+            background-color: red;
             position: absolute;
-            top: 60%;
-            left: -100px;
+            top: 70%;
+            left: -100px; /* Start position off-screen */
+            transform: translateY(-50%);
+            border-radius: 5px;
+            transition: left 0.1s linear;
         }
 
-        .window {
-            width: 40px;
+        .car::before, .car::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
             height: 20px;
-            background: lightblue;
-            margin: 5px auto;
+            background-color: black;
+            border-radius: 50%;
         }
 
-        /* Traffic Light */
+        .car::before {
+            left: 10px;
+        }
+
+        .car::after {
+            right: 10px;
+        }
+
+        .car .window {
+            position: absolute;
+            width: 60px;
+            height: 30px;
+            background-color: lightblue;
+            top: 5px;
+            left: 20px;
+            border-radius: 3px;
+        }
+
         .traffic-light {
             width: 20px;
             height: 60px;
-            background: black;
+            background-color: black;
             position: absolute;
-            top: 5%;
-            right: 5%;
+            top: 6%;
+            right: 10%;
+            border-radius: 5px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2px;
         }
 
         .light {
             width: 20px;
             height: 20px;
-            background: grey;
+            background-color: grey;
             border-radius: 50%;
         }
 
-        /* Zebra Crossing */
+        .light.red {
+            background-color: red;
+        }
+
+        .light.yellow {
+            background-color: yellow;
+        }
+
+        .light.green {
+            background-color: green;
+        }
+
         .zebra-crossing {
             position: absolute;
-            left: 80%;
+            left: 82%;
+            top: 0;
             height: 100%;
             width: 20px;
             display: flex;
@@ -73,10 +107,10 @@
             justify-content: space-around;
         }
 
-        .stripe {
+        .zebra-crossing .stripe {
             width: 100%;
-            height: 15%;
-            background: white;
+            height: 10%;
+            background-color: white;
         }
     </style>
 </head>
@@ -92,6 +126,7 @@
             <div class="stripe"></div>
             <div class="stripe"></div>
             <div class="stripe"></div>
+            <div class="stripe"></div>
         </div>
         <div class="car">
             <div class="window"></div>
@@ -99,46 +134,56 @@
     </div>
 
     <script>
-        const car = document.querySelector('.car');
-        const trafficLights = document.querySelectorAll('.light');
-        let carSpeed = 4;
-        let carPosition = -100;
+        let car = document.querySelector('.car');
+        let trafficLights = document.querySelectorAll('.light');
+        let carSpeed = 4; // Increased speed in pixels per interval
+        let carPosition = -100; // Initial position of the car
+        let trafficLightColor = 'red'; // Initial color
 
-        // Cache zebra crossing position
-        const zebraCrossing = document.querySelector('.zebra-crossing');
-        const zebraCrossingPosition = zebraCrossing.offsetLeft;
-        const bufferZone = 30;
-        let trafficLightColor = 'red';
+        // Get zebra crossing position and dimensions
+        let zebraCrossing = document.querySelector('.zebra-crossing');
+        let zebraCrossingRect = zebraCrossing.getBoundingClientRect();
+        let zebraCrossingPosition = zebraCrossingRect.left + window.scrollX;
+        let zebraCrossingWidth = zebraCrossingRect.width;
+        let bufferZone = 30; // Buffer zone in pixels before the zebra crossing
 
         function changeTrafficLight() {
             const colors = ['red', 'yellow', 'green'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            trafficLightColor = randomColor;
+            trafficLights.forEach(light => light.style.backgroundColor = 'grey'); // Reset all lights to grey
 
-            trafficLights.forEach((light, index) => {
-                light.style.backgroundColor = colors[index] === randomColor ? colors[index] : 'grey';
-            });
+            const randomIndex = Math.floor(Math.random() * colors.length);
+            trafficLightColor = colors[randomIndex];
+            trafficLights[randomIndex].style.backgroundColor = trafficLightColor;
         }
 
         function moveCar() {
-            const carRight = carPosition + car.offsetWidth;
+            let roadRect = document.querySelector('.road').getBoundingClientRect();
+            let carRect = car.getBoundingClientRect();
+            let carRight = carRect.left + carRect.width;
 
-            if (carRight >= zebraCrossingPosition - bufferZone && carPosition < zebraCrossingPosition + zebraCrossing.offsetWidth) {
-                carSpeed = trafficLightColor === 'red' ? 0 : trafficLightColor === 'yellow' ? 2 : 4;
+            // Check if the car is approaching the zebra crossing
+            if (carRight >= zebraCrossingPosition - bufferZone && carRect.left < zebraCrossingPosition + zebraCrossingWidth) {
+                if (trafficLightColor === 'red') {
+                    carSpeed = 0; // Stop the car if the light is red
+                } else if (trafficLightColor === 'yellow') {
+                    carSpeed = 2; // Slow down if the light is yellow
+                } else {
+                    carSpeed = 4; // Normal speed if the light is green
+                }
             } else {
-                carSpeed = 4;
+                carSpeed = 4; // Normal speed otherwise
             }
 
             carPosition += carSpeed;
-            if (carPosition > document.querySelector('.road').offsetWidth) {
-                carPosition = -100;
+            if (carPosition > roadRect.width) {
+                carPosition = -100; // Reset car position when it exits the road
             }
             car.style.left = carPosition + 'px';
         }
 
         changeTrafficLight();
-        setInterval(changeTrafficLight, 2000);
-        setInterval(moveCar, 20);
+        setInterval(changeTrafficLight, 2000); // Change the traffic light color every 2 seconds
+        setInterval(moveCar, 20); // Move the car every 20 milliseconds
     </script>
 </body>
 </html>
