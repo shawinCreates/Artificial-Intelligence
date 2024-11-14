@@ -5,95 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tesla</title>
     <style>
-        /* Basic Variables */
-        :root {
-            --road-width: 60%;
-            --road-height: 200px;
-            --car-width: 80px;
-            --car-height: 40px;
-            --traffic-light-color: black;
-            --background-color: #e0e0e0;
-            --road-color: #333;
-            --car-color: red;
-            --window-color: lightblue;
-        }
-
-        body {
+        /* Basic Layout */
+        body, html {
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: var(--background-color);
+            background: #e0e0e0;
         }
 
+        /* Road */
         .road {
-            width: var(--road-width);
-            height: var(--road-height);
-            background-color: var(--road-color);
+            width: 60%;
+            height: 200px;
+            background: #333;
             position: relative;
-            border: 10px solid #555;
             overflow: hidden;
         }
 
+        /* Car */
         .car {
-            width: var(--car-width);
-            height: var(--car-height);
-            background-color: var(--car-color);
+            width: 80px;
+            height: 40px;
+            background: red;
             position: absolute;
             top: 60%;
             left: -100px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: left 0.1s linear;
         }
 
-        .car .window {
-            width: 50%;
-            height: 50%;
-            background-color: var(--window-color);
-            border-radius: 2px;
+        .window {
+            width: 40px;
+            height: 20px;
+            background: lightblue;
+            margin: 5px auto;
         }
 
-        .wheel {
-            width: 15px;
-            height: 15px;
-            background-color: black;
-            border-radius: 50%;
-            position: absolute;
-            bottom: -5px;
-        }
-        
-        .wheel.left { left: 10px; }
-        .wheel.right { right: 10px; }
-
+        /* Traffic Light */
         .traffic-light {
             width: 20px;
             height: 60px;
-            background-color: var(--traffic-light-color);
+            background: black;
             position: absolute;
             top: 5%;
-            right: 10%;
-            padding: 5px;
+            right: 5%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-radius: 3px;
+            padding: 2px;
         }
 
         .light {
             width: 20px;
             height: 20px;
-            background-color: grey;
+            background: grey;
             border-radius: 50%;
         }
 
+        /* Zebra Crossing */
         .zebra-crossing {
             position: absolute;
             left: 80%;
-            top: 0;
             height: 100%;
             width: 20px;
             display: flex;
@@ -101,10 +73,10 @@
             justify-content: space-around;
         }
 
-        .zebra-crossing .stripe {
+        .stripe {
             width: 100%;
-            height: 10%;
-            background-color: white;
+            height: 15%;
+            background: white;
         }
     </style>
 </head>
@@ -120,12 +92,9 @@
             <div class="stripe"></div>
             <div class="stripe"></div>
             <div class="stripe"></div>
-            <div class="stripe"></div>
         </div>
         <div class="car">
             <div class="window"></div>
-            <div class="wheel left"></div>
-            <div class="wheel right"></div>
         </div>
     </div>
 
