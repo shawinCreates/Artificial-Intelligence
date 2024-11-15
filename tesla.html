@@ -5,51 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tesla</title>
     <style>
+        :root {
+            --car-width: 130px;
+            --car-speed: 4;
+            --zebra-crossing-buffer: 30px;
+        }
+
         .road {
             width: 60%;
             height: 200px;
-            background-color: #333;
+            background-color: #605d5d;
             position: relative;
-            overflow: hidden; /* Ensures the car stays within the road */
+            overflow: hidden;
         }
 
         .car {
-            width: 100px;
-            height: 50px;
-            background-color: red;
+            width: var(--car-width);
             position: absolute;
             top: 70%;
+            left: -150px;
             transform: translateY(-50%);
-            border-radius: 5px;
-            transition: left 0.1s linear;
-        }
-
-        .car::before, .car::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            width: 20px;
-            height: 20px;
-            background-color: black;
-            border-radius: 50%;
-        }
-
-        .car::before {
-            left: 10px;
-        }
-
-        .car::after {
-            right: 10px;
-        }
-
-        .car .window {
-            position: absolute;
-            width: 60px;
-            height: 30px;
-            background-color: lightblue;
-            top: 5px;
-            left: 20px;
-            border-radius: 3px;
         }
 
         .traffic-light {
@@ -70,17 +45,9 @@
             margin: 3px 0;
         }
 
-        .light.red {
-            background-color: red;
-        }
-
-        .light.yellow {
-            background-color: yellow;
-        }
-
-        .light.green {
-            background-color: green;
-        }
+        .light.active-red { background-color: red; }
+        .light.active-yellow { background-color: yellow; }
+        .light.active-green { background-color: green; }
 
         .zebra-crossing {
             position: absolute;
@@ -113,62 +80,51 @@
             <div class="stripe"></div>
             <div class="stripe"></div>
         </div>
-        <div class="car">
-            <div class="window"></div>
-        </div>
+        <img src="car.png" alt="Car" class="car">
     </div>
 
     <script>
-        let car = document.querySelector('.car');
-        let trafficLights = document.querySelectorAll('.light');
-        let carSpeed = 4; // Increased speed in pixels per interval
-        let carPosition = -100; // Initial position of the car
-        let trafficLightColor = 'red'; // Initial color
+        const car = document.querySelector('.car');
+        const trafficLights = document.querySelectorAll('.light');
+        const zebraCrossing = document.querySelector('.zebra-crossing');
+        const roadRect = document.querySelector('.road').getBoundingClientRect();
+        const zebraCrossingLeft = zebraCrossing.getBoundingClientRect().left;
+        const bufferZone = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--zebra-crossing-buffer'));
 
-        // Get zebra crossing position and dimensions
-        let zebraCrossing = document.querySelector('.zebra-crossing');
-        let zebraCrossingRect = zebraCrossing.getBoundingClientRect();
-        let zebraCrossingPosition = zebraCrossingRect.left + window.scrollX;
-        let zebraCrossingWidth = zebraCrossingRect.width;
-        let bufferZone = 30; // Buffer zone in pixels before the zebra crossing
+        let carPosition = -150;
+        let carSpeed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--car-speed'));
+        let trafficLightColor = 'red';
+
+        const colors = ['red', 'yellow', 'green'];
 
         function changeTrafficLight() {
-            const colors = ['red', 'yellow', 'green'];
-            trafficLights.forEach(light => light.style.backgroundColor = 'grey'); // Reset all lights to grey
-
-            const randomIndex = Math.floor(Math.random() * colors.length);
-            trafficLightColor = colors[randomIndex];
-            trafficLights[randomIndex].style.backgroundColor = trafficLightColor;
+            trafficLights.forEach(light => light.classList.remove('active-red', 'active-yellow', 'active-green'));
+            trafficLightColor = colors[Math.floor(Math.random() * colors.length)];
+            document.querySelector(`.light.${trafficLightColor}`).classList.add(`active-${trafficLightColor}`);
         }
 
         function moveCar() {
-            let roadRect = document.querySelector('.road').getBoundingClientRect();
-            let carRect = car.getBoundingClientRect();
-            let carRight = carRect.left + carRect.width;
+            const carRight = carPosition + car.offsetWidth;
 
-            // Check if the car is approaching the zebra crossing
-            if (carRight >= zebraCrossingPosition - bufferZone && carRect.left < zebraCrossingPosition + zebraCrossingWidth) {
-                if (trafficLightColor === 'red') {
-                    carSpeed = 0; // Stop the car if the light is red
-                } else if (trafficLightColor === 'yellow') {
-                    carSpeed = 2; // Slow down if the light is yellow
-                } else {
-                    carSpeed = 4; // Normal speed if the light is green
-                }
+            if (carRight >= zebraCrossingLeft - bufferZone && carPosition < zebraCrossingLeft) {
+                carSpeed = trafficLightColor === 'red' ? 0 : trafficLightColor === 'yellow' ? 2 : 4;
             } else {
-                carSpeed = 4; // Normal speed otherwise
+                carSpeed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--car-speed'));
             }
 
             carPosition += carSpeed;
+
             if (carPosition > roadRect.width) {
-                carPosition = -100; // Reset car position when it exits the road
+                carPosition = -150;
             }
-            car.style.left = carPosition + 'px';
+
+            car.style.left = `${carPosition}px`;
+            requestAnimationFrame(moveCar);
         }
 
         changeTrafficLight();
-        setInterval(changeTrafficLight, 2000); // Change the traffic light color every 2 seconds
-        setInterval(moveCar, 20); // Move the car every 20 milliseconds
+        setInterval(changeTrafficLight, 2000);
+        requestAnimationFrame(moveCar);
     </script>
 </body>
 </html>
